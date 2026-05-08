@@ -1,0 +1,25 @@
+{
+  "name": "youtube-tracker-discord",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @youtube-discord-presence/shared && npm run build -w @youtube-discord-presence/native-host && npm run build -w @youtube-discord-presence/extension",
+    "typecheck": "npm run typecheck -w @youtube-discord-presence/shared && npm run typecheck -w @youtube-discord-presence/native-host && npm run typecheck -w @youtube-discord-presence/extension",
+    "test": "npm run test --workspaces",
+    "clean": "node scripts/clean.mjs",
+    "setup:windows": "powershell -ExecutionPolicy Bypass -File scripts/setup-windows.ps1",
+    "install:native:windows": "node scripts/register-native-host.mjs",
+    "uninstall:native:windows": "node scripts/unregister-native-host.mjs"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.326",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@youtube-discord-presence/native-host",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "youtube-discord-presence-native": "dist/index.js"
+  },
+  "dependencies": {
+    "@youtube-discord-presence/shared": "file:../shared"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  }
+}

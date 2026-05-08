@@ -1,0 +1,13 @@
+{
+  "name": "@youtube-discord-presence/extension",
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "@youtube-discord-presence/shared": "file:../shared"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests"
+  }
+}
