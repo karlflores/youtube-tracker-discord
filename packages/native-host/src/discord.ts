@@ -210,7 +210,7 @@ export function mapPlaybackToActivity(update: PlaybackUpdateMessage): DiscordAct
   const end = durationMs && durationMs > currentMs && !update.isLive ? start + durationMs : undefined;
 
   return {
-    name: "YouTube",
+    name: update.channel ? truncate(update.channel, 128) : "YouTube",
     type: 3,
     details: truncate(update.title, 128),
     details_url: update.url,

@@ -17,7 +17,7 @@ describe("mapPlaybackToActivity", () => {
       updatedAt: Date.now()
     });
     expect(activity.type).toBe(3);
-    expect(activity.name).toBe("YouTube");
+    expect(activity.name).toBe("A channel");
     expect(activity.details).toBe("A video");
     expect(activity.state).toBe("A channel");
     expect(activity.details_url).toBe("https://www.youtube.com/watch?v=abc123");

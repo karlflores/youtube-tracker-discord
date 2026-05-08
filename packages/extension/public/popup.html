@@ -7,9 +7,23 @@
   </head>
   <body>
     <main>
-      <h1>Presence</h1>
-      <p id="status">Checking native host...</p>
-      <p id="active">Checking playback...</p>
+      <header>
+        <div>
+          <p class="eyebrow">YouTube</p>
+          <h1>Discord Presence</h1>
+        </div>
+        <label class="switch" title="Track YouTube activity">
+          <input id="tracking-toggle" type="checkbox" checked>
+          <span></span>
+        </label>
+      </header>
+      <section class="panel">
+        <div class="row">
+          <span id="status-dot" class="status-dot status-dot--warn"></span>
+          <p id="status">Checking native host...</p>
+        </div>
+        <p id="active" class="active">Checking playback...</p>
+      </section>
     </main>
     <script src="popup.js"></script>
   </body>

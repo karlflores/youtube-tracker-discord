@@ -52,4 +52,5 @@ It also creates `packages/native-host/dist/config.json` if it does not already e
 - If the popup reports the native host is unavailable, run the native host registration script after `npm run build`.
 - If Discord remains disconnected, confirm Discord Desktop is running and `packages/native-host/dist/config.json` contains your Discord application client ID.
 - Presence only appears while playback is active. Paused, ended, closed, or navigated-away videos clear the activity.
+- Use the extension popup toggle to stop or resume publishing YouTube playback to Discord.
 - YouTube is a single-page app, so navigation bugs should be tested by clicking between videos without reloading.

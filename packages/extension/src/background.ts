@@ -19,12 +19,21 @@ let status: HostToExtensionMessage = {
   updatedAt: Date.now()
 };
 const tabs = new Map<number, TabState>();
+let trackingEnabled = true;
 
 connectNative();
+loadTrackingPreference();
 
 browserApi.runtime.onMessage.addListener((raw: unknown, sender: MessageSender, sendResponse: SendResponse) => {
   if (isPopupRequest(raw)) {
-    sendResponse({ status, active: getActivePlayback()?.message });
+    sendResponse({ status, active: trackingEnabled ? getActivePlayback()?.message : undefined, trackingEnabled });
+    return true;
+  }
+
+  if (isTrackingSetRequest(raw)) {
+    void setTrackingEnabled(raw.enabled).then(() => {
+      sendResponse({ status, active: trackingEnabled ? getActivePlayback()?.message : undefined, trackingEnabled });
+    });
     return true;
   }
 
@@ -32,10 +41,10 @@ browserApi.runtime.onMessage.addListener((raw: unknown, sender: MessageSender, s
     const message = validateExtensionMessage(withSenderTab(raw, sender.tab?.id));
     if (message.type === "playback_update" && typeof message.tabId === "number") {
       tabs.set(message.tabId, { tabId: message.tabId, message, seenAt: Date.now() });
-      forwardActivePlayback();
+      if (trackingEnabled) forwardActivePlayback();
     } else if (message.type === "clear_presence" && typeof message.tabId === "number") {
       tabs.delete(message.tabId);
-      forwardActivePlayback();
+      if (trackingEnabled) forwardActivePlayback();
     }
   } catch (error) {
     console.warn("Ignored invalid content message", error);
@@ -45,13 +54,13 @@ browserApi.runtime.onMessage.addListener((raw: unknown, sender: MessageSender, s
 
 browserApi.tabs.onRemoved.addListener((tabId: number) => {
   tabs.delete(tabId);
-  forwardActivePlayback();
+  if (trackingEnabled) forwardActivePlayback();
 });
 
 browserApi.tabs.onUpdated.addListener((tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
   if (changeInfo.url && !changeInfo.url.includes("youtube.com/watch") && !changeInfo.url.includes("youtube.com/shorts")) {
     tabs.delete(tabId);
-    forwardActivePlayback();
+    if (trackingEnabled) forwardActivePlayback();
   }
 });
 
@@ -60,8 +69,25 @@ setInterval(() => {
   for (const [tabId, state] of tabs) {
     if (state.seenAt < cutoff) tabs.delete(tabId);
   }
-  forwardActivePlayback();
+  if (trackingEnabled) forwardActivePlayback();
 }, 15000);
+
+function loadTrackingPreference(): void {
+  browserApi.storage.local.get({ trackingEnabled: true }, (items: { trackingEnabled?: unknown }) => {
+    trackingEnabled = typeof items.trackingEnabled === "boolean" ? items.trackingEnabled : true;
+    if (!trackingEnabled) clearPresence("no_active_playback");
+  });
+}
+
+async function setTrackingEnabled(enabled: boolean): Promise<void> {
+  trackingEnabled = enabled;
+  await browserApi.storage.local.set({ trackingEnabled });
+  if (trackingEnabled) {
+    forwardActivePlayback();
+  } else {
+    clearPresence("no_active_playback");
+  }
+}
 
 function connectNative(): void {
   try {
@@ -92,12 +118,20 @@ function connectNative(): void {
 }
 
 function forwardActivePlayback(): void {
+  if (!trackingEnabled) {
+    clearPresence("no_active_playback");
+    return;
+  }
   const active = getActivePlayback();
   if (active) {
     postToNative(active.message);
   } else {
-    postToNative({ type: "clear_presence", reason: "no_active_playback", updatedAt: Date.now() });
+    clearPresence("no_active_playback");
   }
+}
+
+function clearPresence(reason: "no_active_playback"): void {
+  postToNative({ type: "clear_presence", reason, updatedAt: Date.now() });
 }
 
 function postToNative(message: ExtensionToHostMessage): void {
@@ -114,6 +148,13 @@ function getActivePlayback(): TabState | undefined {
 
 function isPopupRequest(raw: unknown): raw is { type: "popup_status_request" } {
   return typeof raw === "object" && raw !== null && (raw as { type?: unknown }).type === "popup_status_request";
+}
+
+function isTrackingSetRequest(raw: unknown): raw is { type: "tracking_set"; enabled: boolean } {
+  return typeof raw === "object"
+    && raw !== null
+    && (raw as { type?: unknown }).type === "tracking_set"
+    && typeof (raw as { enabled?: unknown }).enabled === "boolean";
 }
 
 function withSenderTab(raw: unknown, tabId: number | undefined): unknown {

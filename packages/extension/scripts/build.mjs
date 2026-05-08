@@ -36,7 +36,7 @@ await writeFile(
           strict_min_version: "109.0"
         }
       },
-      permissions: ["nativeMessaging", "tabs", "*://*.youtube.com/*"],
+      permissions: ["nativeMessaging", "storage", "tabs", "*://*.youtube.com/*"],
       background: {
         scripts: ["background.js"],
         persistent: true
